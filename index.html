@@ -2,808 +2,689 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <!-- Viewport Aggiornato: Rimosso user-scalable=no per migliore compatibilità con tastiera iOS -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Gestione Ordini (PWA)</title>
-    
-    <!-- TAGS AGGIUNTI PER LA MODALITÀ APP / PWA su iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Ordini Tracker">
-    
-    <!-- ICONA AGGIORNATA CON EMOJI "CARRELLO DELLA SPESA" 🛒 -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
-    
-    <!-- Carica Tailwind CSS -->
+    <title>Gestione Ordini e Preordini</title>
+    <!-- Caricamento di Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Carica il font Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Variabili di Colore per il Tema Scuro */
-        :root {
-            --bg-dark: #1F2937; /* Sfondo principale scuro */
-            --bg-card: #374151; /* Sfondo schede/elementi */
-            --text-light: #F3F4F6; /* Testo chiaro */
-            --text-muted: #D1D5DB; /* Testo secondario/grigio */
-            --primary-blue: #60A5FA; /* Blu per accenti e highlight */
-            --success-green: #34D399; /* Verde per totali */
-            --warning-yellow: #FCD34D; /* Giallo per preordini */
-            --danger-red: #F87171; /* Rosso per ordini aperti */
-            --border-dark: #4B5563; /* Bordo sottile */
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-dark);
-            color: var(--text-light);
-            /* Aumentato il padding per la barra fissa e per evitare che il contenuto vada sotto l'area "sicura" (safe area) di iOS */
-            padding-bottom: 80px; 
-            padding-top: 1rem;
-        }
-        h1, h2, h3 {
-            color: var(--text-light);
-        }
-
-        /* Stili per le schede degli ordini */
-        .order-card {
-            background-color: var(--bg-card);
-            border-radius: 1rem;
-            padding: 1.25rem; /* Aumentato il padding interno */
-            margin-bottom: 1rem; /* Aumentato il margine inferiore */
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); 
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s;
-            border: 1px solid var(--border-dark);
-            position: relative;
-            cursor: pointer;
-        }
-        .order-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
-        }
-
-        /* Stile per i badge */
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.3em 0.7em;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            line-height: 1;
-            white-space: nowrap;
-        }
-        /* Colori badge in dark mode */
-        .badge-ordine { background-color: #1E3A8A; color: #93C5FD; } 
-        .badge-preordine { background-color: #854D0E; color: #FDBA74; } 
-        .badge-b { background-color: #4B5563; color: var(--text-light); } 
-        .badge-w { background-color: #6B7280; color: var(--text-light); } 
-        .badge-concluso { background-color: #065F46; color: var(--success-green); } 
-        .badge-aperto { background-color: #991B1B; color: var(--danger-red); } 
-
-        /* Input e Select per Dark Mode + Aumento altezza per touch target */
-        input[type="text"], input[type="number"], input[type="date"], textarea, select {
-            background-color: #4B5563; 
-            color: var(--text-light);
-            border-color: var(--border-dark);
-            border-radius: 0.75rem; /* Bordi più arrotondati */
-            padding: 0.6rem 0.8rem;
-            height: 44px; /* Altezza minima per un buon touch target su iOS */
-            transition: border-color 0.2s;
-        }
-        textarea {
-            height: 80px; /* Altezza textarea migliorata */
-        }
-        input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, textarea:focus, select:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.4); /* Ombra più evidente al focus */
-            outline: none;
-        }
-        
-        /* Modale */
-        .modal-content {
-            background-color: var(--bg-dark);
-            border-radius: 1.5rem;
-            border: 1px solid var(--border-dark);
-            max-height: 90vh; /* Permette lo scroll se il contenuto è troppo alto */
-            overflow-y: auto; /* Abilita lo scroll */
-        }
-        .modal-form label {
-            color: var(--text-muted);
-            margin-bottom: 0.25rem;
-            display: block;
-        }
-        
-        /* Contenitore Principale - Centrato e con Margine su grandi schermi */
-        .container-main {
-            max-width: 100%;
-            padding: 0 1rem;
-            margin: 0 auto;
-        }
-        @media (min-width: 768px) {
-            .container-main {
-                max-width: 900px; /* Limite per desktop/tablet */
-                padding: 0 2rem;
+    <!-- Configurazione Tailwind per una Dark Mode minimalista e font Inter -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'background-dark': '#1e293b', // Slate-800
+                        'card-dark': '#334155', // Slate-700
+                        'accent-blue': '#3b82f6', // Blue-500
+                        'text-light': '#f8fafc', // Slate-50
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
             }
         }
+    </script>
+    <style>
+        /* Stili specifici per l'ottimizzazione mobile e iOS */
+        body {
+            background-color: #1e293b;
+            color: #f8fafc;
+            /* Per un'esperienza fullscreen su iPhone (modalità PWA) */
+            padding-bottom: constant(safe-area-inset-bottom);
+            padding-bottom: env(safe-area-inset-bottom);
+            -webkit-tap-highlight-color: transparent;
+        }
 
+        /* Stili per l'intestazione fissa */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #1e293b;
+            padding-top: max(1rem, constant(safe-area-inset-top));
+            padding-top: max(1rem, env(safe-area-inset-top));
+        }
 
-        /* Sezione Azioni Fisse */
-        #fixed-actions {
+        /* Stili per i totali fissi in fondo */
+        footer {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--bg-dark);
-            border-top: 1px solid var(--border-dark);
-            padding: 0.5rem 1rem;
-            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.4);
             z-index: 10;
-        }
-        .action-button {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--text-muted);
-            padding: 0.5rem;
-            border-radius: 0.5rem;
-            transition: color 0.2s, background-color 0.2s, transform 0.2s;
-        }
-        .action-button:hover {
-            background-color: #374151;
-            transform: translateY(-2px);
-            color: var(--primary-blue);
+            background-color: #334155;
+            box-shadow: 0 -4px 6px -1px rgb(0 0 0 / 0.1), 0 -2px 4px -2px rgb(0 0 0 / 0.1);
+            padding-bottom: constant(safe-area-inset-bottom);
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* Override colori testo */
-        .text-green-700 { color: var(--success-green); }
-        .text-gray-500 { color: var(--text-muted); }
-
-        /* Riepilogo e Filtri */
-        .summary-box {
-            background-color: var(--bg-card);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-dark);
-        }
-        #total-value { color: var(--success-green); }
-        #pending-count { color: var(--danger-red); }
-        
-        /* Stili per la conferma di eliminazione in-card */
-        .delete-confirm-bar {
-            background-color: rgba(248, 113, 113, 0.1); /* Rosso molto chiaro */
-            border-radius: 0.5rem;
-            padding: 0.75rem;
-            margin-top: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border: 1px solid var(--danger-red);
+        /* Stile per i campi di input con focus dark */
+        input:focus, textarea:focus, select:focus {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5) !important;
         }
 
+        /* Scrollbar sottile per browser desktop (se usata) */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="container-main">
+    <header class="p-4 rounded-b-xl shadow-lg">
+        <h1 class="text-2xl font-bold text-center text-accent-blue mb-4">Gestione Ordini</h1>
 
-        <h1 class="text-3xl font-bold text-center my-6">Gestione Ordini (Dark Mode)</h1>
+        <!-- Filtri e Azioni -->
+        <div class="flex flex-wrap gap-2 justify-between items-center mb-4">
 
-        <!-- Sezione Riassunto e Filtri -->
-        <div class="summary-box p-5 rounded-xl mb-6">
-            <h2 class="text-xl font-semibold mb-4">Riepilogo e Filtri</h2>
-            
-            <!-- Totali Complessivi -->
-            <div id="summary-totals" class="grid grid-cols-2 gap-4 mb-5 text-center">
-                <div class="p-3 summary-box rounded-lg">
-                    <p class="text-sm font-medium text-gray-500">Totale Ordini</p>
-                    <p id="total-value" class="text-2xl font-bold">€ 0.00</p>
-                </div>
-                <div class="p-3 summary-box rounded-lg">
-                    <p class="text-sm font-medium text-gray-500">Ordini Aperti</p>
-                    <p id="pending-count" class="text-2xl font-bold">0</p>
-                </div>
-            </div>
+            <!-- Filtro Tipo A -->
+            <select id="filterTypeA" class="flex-1 min-w-[120px] bg-card-dark text-text-light p-2 rounded-lg border border-slate-600 focus:ring-accent-blue focus:border-accent-blue transition duration-150">
+                <option value="">Tipo A (Tutti)</option>
+                <option value="Ordine">Ordine</option>
+                <option value="Preordine">Preordine</option>
+            </select>
 
-            <!-- Filtri (utilizzano i nuovi stili input con altezza aumentata) -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <select id="filter-type-a" class="w-full text-sm" onchange="applyFilters()">
-                    <option value="">Tipo A (Tutti)</option>
-                    <option value="Ordine">Ordine</option>
-                    <option value="Preordine">Preordine</option>
-                </select>
-                <select id="filter-type-b" class="w-full text-sm" onchange="applyFilters()">
-                    <option value="">Tipo B (Tutti)</option>
-                    <option value="B">B</option>
-                    <option value="W">W</option>
-                </select>
-                <select id="filter-concluso" class="w-full text-sm col-span-2 sm:col-span-1" onchange="applyFilters()">
-                    <option value="No">Stato (Aperto)</option>
-                    <option value="">Stato (Tutti)</option>
-                    <option value="Si">Stato (Concluso)</option>
-                </select>
-                <button onclick="clearFilters()" class="btn-cancel text-sm col-span-2 sm:col-span-1 py-2 px-3">Reset Filtri</button>
-            </div>
+            <!-- Filtro Tipo B -->
+            <select id="filterTypeB" class="flex-1 min-w-[100px] bg-card-dark text-text-light p-2 rounded-lg border border-slate-600 focus:ring-accent-blue focus:border-accent-blue transition duration-150">
+                <option value="">Tipo B (Tutti)</option>
+                <option value="B">B</option>
+                <option value="W">W</option>
+            </select>
+
+            <!-- Filtro Ordine Concluso -->
+            <select id="filterConcluso" class="flex-1 min-w-[120px] bg-card-dark text-text-light p-2 rounded-lg border border-slate-600 focus:ring-accent-blue focus:border-accent-blue transition duration-150">
+                <option value="">Stato (Tutti)</option>
+                <option value="No">Da Elaborare (No)</option>
+                <option value="Sì">Concluso (Sì)</option>
+            </select>
+
+            <!-- Bottone Aggiungi Nuovo -->
+            <button onclick="showNewForm()" class="bg-accent-blue hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-150 min-w-[100px]">
+                + Nuovo
+            </button>
         </div>
 
-        <!-- Lista Ordini -->
-        <h2 class="text-xl font-semibold mb-3">Ordini Trovati (<span id="orders-count">0</span>)</h2>
-        <div id="orders-list">
-            <!-- Gli ordini saranno inseriti qui dal JavaScript -->
-        </div>
-        <p id="empty-state" class="text-center text-gray-500 p-8 hidden">Nessun ordine trovato. Inseriscine uno nuovo!</p>
+        <!-- Area messaggi/notifiche -->
+        <div id="messageArea" class="p-2 bg-green-500/20 text-green-200 rounded-lg text-sm hidden mb-4 transition-all duration-300"></div>
 
-    </div>
+    </header>
 
-    <!-- Modale/Form per Aggiungere/Modificare Ordine -->
-    <div id="order-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-20">
-        <!-- Contenuto modale: Aggiunto z-index più alto e scrollabilità -->
-        <div class="w-full max-w-lg rounded-xl shadow-2xl p-6 modal-content z-30"> 
-            <h3 id="modal-title" class="text-2xl font-bold mb-5 modal-title">Nuovo Ordine</h3>
-            
-            <form id="order-form" class="space-y-4 modal-form">
-                
-                <!-- ID Nascosto per la Modifica -->
-                <input type="hidden" id="order-id">
-                
-                <!-- Riga 1: Type A / Type B -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="type-a" class="text-sm font-medium">Tipo A</label>
-                        <select id="type-a" class="w-full mt-1">
-                            <option value="">Seleziona</option>
-                            <option value="Ordine">Ordine</option>
-                            <option value="Preordine">Preordine</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="type-b" class="text-sm font-medium">Tipo B</label>
-                        <select id="type-b" class="w-full mt-1">
-                            <option value="">Seleziona</option>
-                            <option value="B">B</option>
-                            <option value="W">W</option>
-                        </select>
-                    </div>
-                </div>
+    <main class="p-4 mb-40">
+        <!-- Modulo di Inserimento/Modifica (Inizialmente nascosto) -->
+        <div id="formContainer" class="bg-card-dark p-4 rounded-xl shadow-2xl mb-6 hidden">
+            <h2 id="formTitle" class="text-xl font-semibold mb-4 border-b border-slate-600 pb-2">Aggiungi Nuovo Ordine</h2>
+            <form id="orderForm" class="space-y-3">
+                <input type="hidden" id="orderId">
 
-                <!-- Riga 2: Nome / Pezzo -->
-                <div>
-                    <label for="nome" class="text-sm font-medium">Nome Cliente</label>
-                    <input type="text" id="nome" class="w-full mt-1" placeholder="Nome del cliente">
-                </div>
-                <div>
-                    <label for="pezzo" class="text-sm font-medium">Nome Oggetto</label>
-                    <input type="text" id="pezzo" class="w-full mt-1" placeholder="Nome dell'oggetto">
-                </div>
-                
-                <!-- Riga 3: Quantità / Prezzo Unitario -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="quantita" class="text-sm font-medium">Quantità</label>
-                        <input type="number" id="quantita" class="w-full mt-1" min="1" value="1" inputmode="numeric">
-                    </div>
-                    <div>
-                        <label for="prezzo-unitario" class="text-sm font-medium">Prezzo Unitario (€)</label>
-                        <input type="number" id="prezzo-unitario" class="w-full mt-1" step="0.01" placeholder="0.00" inputmode="decimal">
-                    </div>
-                </div>
-
-                <!-- Totale Calcolato (Solo Visualizzazione) -->
-                <div class="pt-2">
-                    <p class="text-sm font-medium text-gray-500">Totale Calcolato</p>
-                    <p id="calculated-total" class="text-xl font-bold text-success-green">€ 0.00</p>
-                </div>
-                
-                <!-- Riga 4: Date -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label for="data-release" class="text-sm font-medium">Data Release</label>
-                        <input type="date" id="data-release" class="w-full mt-1">
-                    </div>
-                    <div>
-                        <label for="data-consegna" class="text-sm font-medium">Data Consegna (Indicata)</label>
-                        <input type="date" id="data-consegna" class="w-full mt-1">
-                    </div>
-                </div>
-
-                <!-- Riga 5: Ordine Concluso -->
-                <div>
-                    <label for="ordine-concluso" class="text-sm font-medium">Ordine Concluso</label>
-                    <select id="ordine-concluso" class="w-full mt-1">
-                        <option value="No">No (In Corso)</option>
-                        <option value="Si">Sì (Concluso)</option>
+                <!-- Type A (Ordine/Preordine) -->
+                <div class="flex flex-col">
+                    <label for="typeA" class="text-sm font-medium mb-1">Tipo A (Ordine/Preordine)</label>
+                    <select id="typeA" class="bg-slate-700/50 p-2 rounded-lg border border-slate-600">
+                        <option value="">Seleziona Tipo</option>
+                        <option value="Ordine">Ordine</option>
+                        <option value="Preordine">Preordine</option>
                     </select>
                 </div>
 
-                <!-- Riga 6: Note -->
-                <div>
-                    <label for="note" class="text-sm font-medium">Note (max 50 caratteri)</label>
-                    <textarea id="note" class="w-full mt-1 resize-none" maxlength="50" placeholder="Note veloci..."></textarea>
+                <!-- Type B (B/W) -->
+                <div class="flex flex-col">
+                    <label for="typeB" class="text-sm font-medium mb-1">Tipo B (B/W)</label>
+                    <select id="typeB" class="bg-slate-700/50 p-2 rounded-lg border border-slate-600">
+                        <option value="">Seleziona B/W</option>
+                        <option value="B">B</option>
+                        <option value="W">W</option>
+                    </select>
                 </div>
-                
-                <!-- Pulsanti Azione Modale -->
-                <div class="flex justify-end space-x-3 pt-6">
-                    <button type="button" onclick="closeModal()" class="btn-cancel">Annulla</button>
-                    <button type="submit" class="btn-submit">Salva Ordine</button>
+
+                <!-- Nome -->
+                <div class="flex flex-col">
+                    <label for="nome" class="text-sm font-medium mb-1">Nome Nominativo</label>
+                    <input type="text" id="nome" placeholder="Inserisci il nominativo" class="bg-slate-700/50 p-2 rounded-lg border border-slate-600">
+                </div>
+
+                <!-- Pezzo -->
+                <div class="flex flex-col">
+                    <label for="pezzo" class="text-sm font-medium mb-1">Nome Oggetto</label>
+                    <input type="text" id="pezzo" placeholder="Nome dell'oggetto" class="bg-slate-700/50 p-2 rounded-lg border border-slate-600">
+                </div>
+
+                <!-- Quantità -->
+                <div class="flex flex-col">
+                    <label for="quantita" class="text-sm font-medium mb-1">Quantità</label>
+                    <input type="number" id="quantita" value="" placeholder="0" min="0" class="bg-slate-700/50 p-2 rounded-lg border border-slate-600 text-right">
+                </div>
+
+                <!-- Prezzo Unitario -->
+                <div class="flex flex-col">
+                    <label for="prezzoUnitario" class="text-sm font-medium mb-1">Prezzo Unitario (€)</label>
+                    <input type="number" id="prezzoUnitario" value="" placeholder="0.00" min="0" step="0.01" class="bg-slate-700/50 p-2 rounded-lg border border-slate-600 text-right">
+                </div>
+
+                <!-- Totale (Calcolato) -->
+                <div class="flex justify-between items-center bg-slate-700/50 p-3 rounded-lg border border-slate-600">
+                    <span class="text-sm font-medium">Totale:</span>
+                    <span id="displayTotale" class="text-lg font-bold text-accent-blue">€ 0.00</span>
+                    <input type="hidden" id="totale">
+                </div>
+
+                <!-- Data Release -->
+                <div class="flex flex-col">
+                    <label for="dataRelease" class="text-sm font-medium mb-1">Data Release (Opzionale)</label>
+                    <input type="date" id="dataRelease" class="bg-slate-700/50 p-2 rounded-lg border border-slate-600">
+                </div>
+
+                <!-- Data Consegna Indicata -->
+                <div class="flex flex-col">
+                    <label for="dataConsegna" class="text-sm font-medium mb-1">Data di Consegna Indicata (Opzionale)</label>
+                    <input type="date" id="dataConsegna" class="bg-slate-700/50 p-2 rounded-lg border border-slate-600">
+                </div>
+
+                <!-- Ordine Concluso -->
+                <div class="flex flex-col">
+                    <label for="ordineConcluso" class="text-sm font-medium mb-1">Ordine Concluso</label>
+                    <select id="ordineConcluso" class="bg-slate-700/50 p-2 rounded-lg border border-slate-600">
+                        <option value="No">No (Da elaborare)</option>
+                        <option value="Sì">Sì (Concluso)</option>
+                    </select>
+                </div>
+
+                <!-- Note (Max 50 caratteri) -->
+                <div class="flex flex-col">
+                    <label for="note" class="text-sm font-medium mb-1 flex justify-between">
+                        Note (Max 50 caratteri)
+                        <span id="noteCount" class="text-xs text-slate-400">0/50</span>
+                    </label>
+                    <textarea id="note" rows="2" maxlength="50" placeholder="Inserisci note (max 50 caratteri)" class="bg-slate-700/50 p-2 rounded-lg border border-slate-600 resize-none"></textarea>
+                </div>
+
+                <!-- Bottoni Salva e Annulla -->
+                <div class="flex gap-3 pt-4">
+                    <button type="button" onclick="saveOrder()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg shadow-lg transition duration-150">
+                        Salva Ordine
+                    </button>
+                    <button type="button" onclick="hideForm()" class="flex-1 bg-slate-500 hover:bg-slate-600 text-white font-semibold py-3 rounded-lg shadow-lg transition duration-150">
+                        Annulla
+                    </button>
                 </div>
             </form>
         </div>
-    </div>
-    
-    <!-- Barra di Navigazione Fissa (Mobile Optimized) -->
-    <div id="fixed-actions" class="flex justify-around items-center">
-        <!-- Nuovo -->
-        <button onclick="openModal()" class="action-button text-primary-blue hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-            </svg>
-            <span class="text-xs mt-1">Nuovo</span>
-        </button>
 
-        <!-- Importa -->
-        <button onclick="document.getElementById('file-input').click()" class="action-button">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-            </svg>
-            <span class="text-xs mt-1">Importa</span>
-            <input type="file" id="file-input" class="hidden" accept=".json" onchange="importData(event)">
-        </button>
+        <!-- Lista degli Ordini Filtrati -->
+        <div id="orderList" class="space-y-4">
+            <!-- Gli ordini verranno inseriti qui dal JS -->
+        </div>
 
-        <!-- Esporta -->
-        <button onclick="exportData()" class="action-button">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0L8 12m4 4V4" />
-            </svg>
-            <span class="text-xs mt-1">Esporta</span>
-        </button>
-        
-        <!-- Aggiorna -->
-        <button onclick="window.location.reload()" class="action-button">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h5M20 20v-5h-5M4 13a8 8 0 1016 0A8 8 0 104 13z" />
-            </svg>
-            <span class="text-xs mt-1">Aggiorna</span>
-        </button>
-    </div>
+        <!-- Messaggio di Nessun Ordine -->
+        <p id="noOrdersMessage" class="text-center text-slate-400 mt-10 text-lg hidden">Nessun ordine trovato con i filtri attuali.</p>
 
-    
+        <!-- Modale per conferma eliminazione -->
+        <div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 hidden z-50">
+            <div class="bg-card-dark p-6 rounded-xl shadow-2xl w-full max-w-sm">
+                <h3 class="text-xl font-bold mb-4">Conferma Eliminazione</h3>
+                <p class="mb-6">Sei sicuro di voler eliminare l'ordine selezionato? Questa azione è irreversibile.</p>
+                <div class="flex gap-4 justify-end">
+                    <button id="cancelDeleteBtn" class="bg-slate-500 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-150">
+                        Annulla
+                    </button>
+                    <button id="confirmDeleteBtn" class="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150">
+                        Elimina
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer Fisso per i Totali e Azioni Globali -->
+    <footer class="p-4 rounded-t-xl">
+        <!-- Totali Complessivi (Filtri applicati) -->
+        <div class="flex justify-around text-center mb-4 border-b border-slate-600 pb-2">
+            <div>
+                <p class="text-xs text-slate-400">Totale Elementi</p>
+                <p id="totalCount" class="text-xl font-bold">0</p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-400">Totale Prezzo (€)</p>
+                <p id="totalValue" class="text-xl font-bold text-green-400">€ 0.00</p>
+            </div>
+        </div>
+
+        <!-- Tasti Esporta/Importa -->
+        <div class="flex gap-4">
+            <button onclick="exportData()" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2 rounded-lg shadow-md transition duration-150 text-sm">
+                Esporta Dati (JSON)
+            </button>
+            <input type="file" id="importFile" accept=".json" class="hidden" onchange="importData(event)">
+            <button onclick="document.getElementById('importFile').click()" class="flex-1 bg-slate-600 hover:bg-slate-500 text-white font-semibold py-2 rounded-lg shadow-md transition duration-150 text-sm">
+                Importa Dati (JSON)
+            </button>
+        </div>
+    </footer>
+
+
     <script>
-        // Variabili Globali
-        let ordersData = []; // Cache di tutti gli ordini
-        const LOCAL_STORAGE_KEY = 'order_tracker_data'; // Chiave per localStorage
+        const STORAGE_KEY = 'ordersData';
+        let orders = [];
+        let orderToDeleteId = null;
 
-        /**
-         * Carica i dati degli ordini da localStorage.
-         */
-        function loadOrders() {
+        // Funzione helper per formattare la valuta
+        const formatCurrency = (amount) => {
+            // Assicura che amount sia un numero
+            const num = parseFloat(amount);
+            if (isNaN(num)) return '€ 0.00';
+
+            return new Intl.NumberFormat('it-IT', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 2,
+            }).format(num);
+        };
+
+        // ---------------------------------------------
+        // 1. GESTIONE DEI DATI E LOCALSTORAGE
+        // ---------------------------------------------
+
+        // Carica i dati dal localStorage all'avvio
+        const loadOrders = () => {
             try {
-                const data = localStorage.getItem(LOCAL_STORAGE_KEY);
-                ordersData = data ? JSON.parse(data) : [];
-                console.log(`Dati caricati da localStorage: trovati ${ordersData.length} ordini.`);
-            } catch (error) {
-                console.error("Errore durante il caricamento da localStorage:", error);
-                ordersData = []; // Fallback a un array vuoto in caso di errore di parsing
+                const data = localStorage.getItem(STORAGE_KEY);
+                orders = data ? JSON.parse(data) : [];
+                // Ordina per default i "Non Conclusi" prima e poi per ID decrescente
+                orders.sort((a, b) => {
+                    if (a.ordineConcluso === 'No' && b.ordineConcluso === 'Sì') return -1;
+                    if (a.ordineConcluso === 'Sì' && b.ordineConcluso === 'No') return 1;
+                    return b.id - a.id; // Ultimi inseriti in alto
+                });
+                applyFilters();
+            } catch (e) {
+                console.error("Errore nel caricamento dei dati dal localStorage:", e);
+                orders = [];
+                showMessage("Attenzione: Impossibile caricare i dati. localStorage non accessibile.", 'red');
             }
-        }
+        };
 
-        /**
-         * Salva i dati correnti degli ordini in localStorage.
-         */
-        function saveOrders() {
+        // Salva i dati nel localStorage
+        const saveOrders = () => {
             try {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(ordersData));
-                console.log("Dati salvati in localStorage.");
-            } catch (error) {
-                console.error("Errore durante il salvataggio in localStorage:", error);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(orders));
+                // Dopo il salvataggio, riapplica i filtri per aggiornare la visualizzazione
+                applyFilters();
+            } catch (e) {
+                console.error("Errore nel salvataggio dei dati nel localStorage:", e);
+                showMessage("Attenzione: Impossibile salvare i dati. Spazio esaurito o errore.", 'red');
             }
-        }
+        };
 
+        // ---------------------------------------------
+        // 2. GESTIONE DEL MODULO DI INSERIMENTO/MODIFICA
+        // ---------------------------------------------
 
-        /**
-         * Applica i filtri correnti e aggiorna la visualizzazione degli ordini e i totali.
-         */
-        function applyFilters() {
-            const filterA = document.getElementById('filter-type-a').value;
-            const filterB = document.getElementById('filter-type-b').value;
-            const filterConcluso = document.getElementById('filter-concluso').value;
+        // Calcola e aggiorna il totale in tempo reale
+        const updateTotale = () => {
+            const quantitaInput = document.getElementById('quantita');
+            const prezzoInput = document.getElementById('prezzoUnitario');
 
-            const filteredOrders = ordersData.filter(order => {
-                const matchesA = !filterA || order.typeA === filterA;
-                const matchesB = !filterB || order.typeB === filterB;
-                const matchesConcluso = !filterConcluso || order.ordineConcluso === filterConcluso;
-                return matchesA && matchesB && matchesConcluso;
+            const quantita = parseInt(quantitaInput.value) || 0;
+            const prezzoUnitario = parseFloat(prezzoInput.value) || 0.00;
+
+            const totale = quantita * prezzoUnitario;
+
+            document.getElementById('displayTotale').textContent = formatCurrency(totale);
+            document.getElementById('totale').value = totale.toFixed(2); // Salva il valore con 2 decimali
+        };
+
+        // Aggiorna il contatore dei caratteri delle note
+        const updateNoteCount = () => {
+            const noteInput = document.getElementById('note');
+            const countSpan = document.getElementById('noteCount');
+            const length = noteInput.value.length;
+            countSpan.textContent = `${length}/50`;
+        };
+
+        // Aggiunge listener per il calcolo del totale e il conteggio note
+        document.getElementById('quantita').addEventListener('input', updateTotale);
+        document.getElementById('prezzoUnitario').addEventListener('input', updateTotale);
+        document.getElementById('note').addEventListener('input', updateNoteCount);
+
+        // Mostra il modulo e lo resetta per un nuovo inserimento
+        const showNewForm = () => {
+            const formContainer = document.getElementById('formContainer');
+            document.getElementById('orderForm').reset();
+            document.getElementById('orderId').value = '';
+            document.getElementById('formTitle').textContent = 'Aggiungi Nuovo Ordine';
+            document.getElementById('displayTotale').textContent = formatCurrency(0);
+            updateNoteCount();
+            formContainer.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scrolla in cima
+        };
+
+        // Nasconde il modulo
+        const hideForm = () => {
+            document.getElementById('formContainer').classList.add('hidden');
+        };
+
+        // Popola il modulo con i dati dell'ordine per la modifica
+        const editOrder = (id) => {
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
+
+            const formContainer = document.getElementById('formContainer');
+            document.getElementById('orderId').value = order.id;
+            document.getElementById('formTitle').textContent = 'Modifica Ordine';
+
+            // Popola i campi (assicurandosi che i numeri siano gestiti correttamente)
+            document.getElementById('typeA').value = order.typeA || '';
+            document.getElementById('typeB').value = order.typeB || '';
+            document.getElementById('nome').value = order.nome || '';
+            document.getElementById('pezzo').value = order.pezzo || '';
+            document.getElementById('quantita').value = order.quantita || '';
+            document.getElementById('prezzoUnitario').value = order.prezzoUnitario || '';
+            document.getElementById('dataRelease').value = order.dataRelease || '';
+            document.getElementById('dataConsegna').value = order.dataConsegna || '';
+            document.getElementById('ordineConcluso').value = order.ordineConcluso || 'No';
+            document.getElementById('note').value = order.note || '';
+
+            updateTotale();
+            updateNoteCount();
+            formContainer.classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scrolla in cima
+        };
+
+        // Salva un nuovo ordine o aggiorna uno esistente
+        const saveOrder = () => {
+            const id = document.getElementById('orderId').value;
+
+            // Raccogli i dati dal form
+            const quantitaVal = document.getElementById('quantita').value;
+            const prezzoUnitarioVal = document.getElementById('prezzoUnitario').value;
+
+            const newOrder = {
+                id: id ? parseInt(id) : Date.now(), // Usa un timestamp come ID univoco
+                typeA: document.getElementById('typeA').value,
+                typeB: document.getElementById('typeB').value,
+                nome: document.getElementById('nome').value.trim(),
+                pezzo: document.getElementById('pezzo').value.trim(),
+                quantita: quantitaVal ? parseInt(quantitaVal) : null,
+                prezzoUnitario: prezzoUnitarioVal ? parseFloat(prezzoUnitarioVal) : null,
+                // Il totale è già calcolato in updateTotale, ma lo ricalcoliamo per sicurezza
+                totale: (quantitaVal && prezzoUnitarioVal) ? (parseInt(quantitaVal) * parseFloat(prezzoUnitarioVal)).toFixed(2) : null,
+                dataRelease: document.getElementById('dataRelease').value,
+                dataConsegna: document.getElementById('dataConsegna').value,
+                ordineConcluso: document.getElementById('ordineConcluso').value || 'No',
+                note: document.getElementById('note').value.trim().substring(0, 50), // Troncamento garantito a 50 caratteri
+            };
+
+            if (id) {
+                // Modifica
+                const index = orders.findIndex(o => o.id === parseInt(id));
+                if (index !== -1) {
+                    orders[index] = newOrder;
+                    showMessage('Ordine modificato con successo!', 'green');
+                }
+            } else {
+                // Nuovo Inserimento
+                orders.push(newOrder);
+                showMessage('Nuovo ordine aggiunto con successo!', 'green');
+            }
+
+            hideForm();
+            saveOrders(); // Salva e aggiorna la lista
+        };
+
+        // ---------------------------------------------
+        // 3. VISUALIZZAZIONE E FILTRI
+        // ---------------------------------------------
+
+        // Applica i filtri e aggiorna la lista degli ordini
+        const applyFilters = () => {
+            const filterA = document.getElementById('filterTypeA').value;
+            const filterB = document.getElementById('filterTypeB').value;
+            const filterConcluso = document.getElementById('filterConcluso').value;
+
+            const filteredOrders = orders.filter(order => {
+                const matchA = !filterA || order.typeA === filterA;
+                const matchB = !filterB || order.typeB === filterB;
+                const matchConcluso = !filterConcluso || order.ordineConcluso === filterConcluso;
+                return matchA && matchB && matchConcluso;
             });
 
             renderOrders(filteredOrders);
-            updateTotals(ordersData); // Aggiorna i totali globali sempre su ordersData
-        }
+            updateGlobalTotals(filteredOrders);
+        };
 
-        /**
-         * Rimuove tutti i filtri e ripristina la visualizzazione predefinita (solo ordini aperti).
-         */
-        window.clearFilters = function() {
-            document.getElementById('filter-type-a').value = "";
-            document.getElementById('filter-type-b').value = "";
-            document.getElementById('filter-concluso').value = "No"; // Predefinito: solo aperti
-            applyFilters();
-        }
-        
-        // Espone applyFilters a livello globale per l'onchange degli elementi HTML
-        window.applyFilters = applyFilters;
+        // Aggiorna i totali globali
+        const updateGlobalTotals = (list) => {
+            const totalCount = list.length;
+            const totalValue = list.reduce((sum, order) => {
+                const total = parseFloat(order.totale);
+                return sum + (isNaN(total) ? 0 : total);
+            }, 0);
 
+            document.getElementById('totalCount').textContent = totalCount;
+            document.getElementById('totalValue').textContent = formatCurrency(totalValue);
+        };
 
-        /**
-         * Aggiorna i totali complessivi nell'interfaccia utente.
-         * @param {Array<Object>} orders - L'array di ordini completo da cui calcolare i totali.
-         */
-        function updateTotals(orders) {
-            let totalValue = 0;
-            let pendingCount = 0;
+        // Renderizza la lista degli ordini filtrati
+        const renderOrders = (list) => {
+            const orderList = document.getElementById('orderList');
+            orderList.innerHTML = '';
+            const noOrdersMessage = document.getElementById('noOrdersMessage');
 
-            orders.forEach(order => {
-                const total = parseFloat(order.totale) || 0;
-                totalValue += total;
-                if (order.ordineConcluso === 'No') {
-                    pendingCount++;
-                }
-            });
-
-            // Aggiorna i totali globali
-            document.getElementById('total-value').textContent = `€ ${totalValue.toFixed(2)}`;
-            document.getElementById('pending-count').textContent = pendingCount;
-            // Aggiorna il conteggio degli ordini attualmente visualizzati (filtrati)
-            document.getElementById('orders-count').textContent = 
-                document.getElementById('orders-list').children.length;
-        }
-
-        /**
-         * Popola la lista degli ordini nell'interfaccia utente.
-         * @param {Array<Object>} orders - L'array di ordini da visualizzare.
-         */
-        function renderOrders(orders) {
-            const listContainer = document.getElementById('orders-list');
-            listContainer.innerHTML = ''; // Pulisce la lista
-
-            if (orders.length === 0) {
-                document.getElementById('empty-state').classList.remove('hidden');
+            if (list.length === 0) {
+                noOrdersMessage.classList.remove('hidden');
                 return;
-            } else {
-                document.getElementById('empty-state').classList.add('hidden');
             }
 
-            // Ordina per timestamp (più recente in alto)
-            orders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            noOrdersMessage.classList.add('hidden');
 
+            list.forEach(order => {
+                const card = document.createElement('div');
+                card.className = `bg-card-dark p-4 rounded-xl shadow-lg border-l-4 ${order.ordineConcluso === 'Sì' ? 'border-green-500 opacity-70' : 'border-accent-blue'} transition duration-150`;
 
-            orders.forEach(order => {
-                const total = parseFloat(order.totale) || 0;
-                const isConcluded = order.ordineConcluso === 'Si';
-                
-                const orderHtml = `
-                    <div id="card-${order.id}" class="order-card">
-                        <div onclick="editOrder('${order.id}')" class="grid grid-cols-12 gap-2 pb-2">
-                            <!-- Colonna Sinistra: Pezzo e Info Principali -->
-                            <div class="col-span-12 sm:col-span-9">
-                                <h3 class="text-xl font-bold truncate">${order.pezzo || 'Nessun Oggetto'}</h3>
-                                <p class="text-sm text-gray-500 mb-2">Cliente: ${order.nome || 'Anonimo'}</p>
-                                
-                                <!-- Badge -->
-                                <div class="flex flex-wrap gap-2 mt-2">
-                                    <span class="badge ${order.typeA === 'Ordine' ? 'badge-ordine' : 'badge-preordine'}">${order.typeA || 'N/A'}</span>
-                                    <span class="badge ${order.typeB === 'B' ? 'badge-b' : 'badge-w'}">${order.typeB || 'N/A'}</span>
-                                    <span class="badge ${isConcluded ? 'badge-concluso' : 'badge-aperto'}">
-                                        ${isConcluded ? 'Concluso' : 'Aperto'}
-                                    </span>
-                                </div>
-                            </div>
+                // Badge per il tipo di ordine
+                const statusBadge = `<span class="text-xs font-semibold px-2 py-0.5 rounded-full ${order.ordineConcluso === 'Sì' ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}">${order.ordineConcluso === 'Sì' ? 'Concluso' : 'Da Elaborare'}</span>`;
 
-                            <!-- Colonna Destra: Totale e Quantità -->
-                            <div class="col-span-12 sm:col-span-3 text-right flex flex-col justify-end items-end">
-                                <p class="text-2xl font-extrabold text-green-700">${total.toFixed(2)} €</p>
-                                <p class="text-sm text-gray-500 mt-1">${order.quantita || 0} pz</p>
-                            </div>
-                        </div>
+                // Badge per i tipi A e B
+                const typeBadges = `
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-500/50">${order.typeA || 'N/A'}</span>
+                    <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-slate-500/50">${order.typeB || 'N/A'}</span>
+                `;
 
-                        <!-- Riga Dettagli -->
-                        <div class="border-t border-border-dark pt-3 mt-1 text-sm text-gray-500">
-                            ${order.note ? `<p class="italic mb-1">Note: ${order.note}</p>` : ''}
-                            <p>Release: ${order.dataRelease || 'N/A'} | Consegna Prevista: ${order.dataConsegna || 'N/A'}</p>
-                        </div>
-                        
-                        <!-- Barra di Eliminazione (Nascosta inizialmente) -->
-                        <div id="delete-bar-${order.id}" class="delete-confirm-bar hidden mt-3">
-                            <span class="text-sm text-danger-red font-semibold">Confermi l'eliminazione?</span>
-                            <div class="flex space-x-2">
-                                <button onclick="confirmDelete('${order.id}', true)" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-xs transition">
-                                    SÌ, Elimina
-                                </button>
-                                <button onclick="confirmDelete('${order.id}', false)" class="bg-gray-500 hover:bg-gray-600 text-white py-1 px-3 rounded-md text-xs transition">
-                                    Annulla
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Pulsante Elimina (Visibile di default) -->
-                        <div id="delete-button-container-${order.id}" class="flex justify-end pt-2">
-                            <button onclick="showDeleteConfirm('${order.id}')" class="text-danger-red hover:text-red-400 text-sm p-1 transition">
-                                Elimina Ordine
-                            </button>
+                // Calcolo e formattazione dei dati
+                const totale = parseFloat(order.totale);
+                const displayTotale = formatCurrency(totale);
+                const quantitaDisplay = order.quantita !== null ? order.quantita : 'N/D';
+                const prezzoUnitarioDisplay = order.prezzoUnitario !== null ? formatCurrency(order.prezzoUnitario) : 'N/D';
+
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2 border-b border-slate-700 pb-2">
+                        <h3 class="text-lg font-bold truncate pr-4">${order.pezzo || 'Oggetto Senza Nome'}</h3>
+                        <div class="flex-shrink-0 flex gap-1 items-center">
+                           ${statusBadge}
                         </div>
                     </div>
+
+                    <p class="text-sm text-slate-300 mb-2">
+                        <span class="font-semibold">${order.nome || 'Nominativo Sconosciuto'}</span>
+                    </p>
+
+                    <div class="grid grid-cols-2 gap-y-1 text-sm mb-4">
+                        <p class="text-slate-400">Tipi:</p>
+                        <div class="flex gap-2 justify-end">${typeBadges}</div>
+
+                        <p class="text-slate-400">Quantità / Prezzo Unitario:</p>
+                        <p class="text-right font-medium">${quantitaDisplay} / ${prezzoUnitarioDisplay}</p>
+
+                        <p class="text-slate-400 font-bold">Totale:</p>
+                        <p class="text-right text-lg font-extrabold text-green-400">${displayTotale}</p>
+
+                        <p class="text-slate-400">Data Release:</p>
+                        <p class="text-right">${order.dataRelease || 'N/D'}</p>
+
+                        <p class="text-slate-400">Data Consegna Indicata:</p>
+                        <p class="text-right">${order.dataConsegna || 'N/D'}</p>
+                    </div>
+
+                    ${order.note ? `<div class="mt-2 text-sm italic border-t border-slate-700 pt-2 text-slate-300">Note: ${order.note}</div>` : ''}
+
+                    <div class="flex gap-2 mt-4 pt-3 border-t border-slate-700">
+                        <button onclick="editOrder(${order.id})" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white text-sm py-2 rounded-lg transition duration-150">
+                            Modifica
+                        </button>
+                        <button onclick="showDeleteModal(${order.id})" class="bg-red-700/50 hover:bg-red-600/70 text-white text-sm w-1/4 py-2 rounded-lg transition duration-150">
+                            Elimina
+                        </button>
+                    </div>
                 `;
-                listContainer.insertAdjacentHTML('beforeend', orderHtml);
+                orderList.appendChild(card);
             });
-             updateTotals(ordersData); // Aggiorna il conteggio solo dopo il rendering
-        }
+        };
 
-        /**
-         * Mostra la barra di conferma eliminazione.
-         * @param {string} id - L'ID dell'ordine.
-         */
-        window.showDeleteConfirm = function(id) {
-            const bar = document.getElementById(`delete-bar-${id}`);
-            const button = document.getElementById(`delete-button-container-${id}`);
+        // Aggiunge listener ai filtri per l'aggiornamento automatico
+        document.getElementById('filterTypeA').addEventListener('change', applyFilters);
+        document.getElementById('filterTypeB').addEventListener('change', applyFilters);
+        document.getElementById('filterConcluso').addEventListener('change', applyFilters);
 
-            // Nasconde tutti gli altri messaggi di conferma
-            document.querySelectorAll('.delete-confirm-bar').forEach(b => b.classList.add('hidden'));
-            document.querySelectorAll('[id^="delete-button-container-"]').forEach(b => b.classList.remove('hidden'));
-            
-            // Mostra la barra specifica
-            bar.classList.remove('hidden');
-            button.classList.add('hidden');
-        }
-        
-        /**
-         * Gestisce la conferma/annullamento dell'eliminazione.
-         * @param {string} id - L'ID dell'ordine.
-         * @param {boolean} confirm - Vero se l'utente ha confermato, Falso altrimenti.
-         */
-        window.confirmDelete = function(id, confirm) {
-            const bar = document.getElementById(`delete-bar-${id}`);
-            const button = document.getElementById(`delete-button-container-${id}`);
+        // ---------------------------------------------
+        // 4. ELIMINAZIONE
+        // ---------------------------------------------
 
-            if (confirm) {
-                deleteOrder(id);
-            } else {
-                // Nasconde la barra e ripristina il pulsante
-                bar.classList.add('hidden');
-                button.classList.remove('hidden');
+        // Mostra il modale di conferma eliminazione
+        const showDeleteModal = (id) => {
+            orderToDeleteId = id;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        };
+
+        // Nasconde il modale
+        const hideDeleteModal = () => {
+            orderToDeleteId = null;
+            document.getElementById('deleteModal').classList.add('hidden');
+        };
+
+        // Logica di eliminazione
+        const deleteOrder = () => {
+            if (orderToDeleteId !== null) {
+                orders = orders.filter(o => o.id !== orderToDeleteId);
+                saveOrders();
+                showMessage('Ordine eliminato con successo.', 'red');
             }
-        }
+            hideDeleteModal();
+        };
 
+        // Listener per i bottoni del modale
+        document.getElementById('confirmDeleteBtn').addEventListener('click', deleteOrder);
+        document.getElementById('cancelDeleteBtn').addEventListener('click', hideDeleteModal);
 
-        /**
-         * Gestisce l'invio del form (Aggiungi o Modifica).
-         */
-        document.getElementById('order-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            // Raccoglie i dati dal form
-            const id = document.getElementById('order-id').value;
-            const quantita = parseInt(document.getElementById('quantita').value) || 0;
-            const prezzoUnitario = parseFloat(document.getElementById('prezzo-unitario').value) || 0;
-            const totale = (quantita * prezzoUnitario).toFixed(2);
-            
-            const newOrder = {
-                typeA: document.getElementById('type-a').value,
-                typeB: document.getElementById('type-b').value,
-                nome: document.getElementById('nome').value.trim(),
-                pezzo: document.getElementById('pezzo').value.trim(),
-                quantita: quantita,
-                prezzoUnitario: prezzoUnitario.toFixed(2),
-                totale: totale,
-                dataRelease: document.getElementById('data-release').value,
-                dataConsegna: document.getElementById('data-consegna').value,
-                note: document.getElementById('note').value.substring(0, 50).trim(), // Tronca a 50 caratteri
-                ordineConcluso: document.getElementById('ordine-concluso').value,
-                timestamp: new Date().toISOString()
-            };
+        // ---------------------------------------------
+        // 5. IMPORT/EXPORT DATI
+        // ---------------------------------------------
 
-            // Validazione minima
-            if (newOrder.pezzo === '' && newOrder.nome === '') {
-                 console.warn("Devi inserire almeno il nome dell'oggetto o il nome del cliente.");
-                 return;
-            }
-            
-            saveOrUpdateOrder(id, newOrder);
-            closeModal();
-        });
-
-        /**
-         * Salva o aggiorna un ordine nel locale ordersData array e in localStorage.
-         * @param {string} id - ID dell'ordine (se in modifica)
-         * @param {Object} orderData - I dati dell'ordine
-         */
-        function saveOrUpdateOrder(id, orderData) {
-            if (id) {
-                // Modifica Ordine
-                const index = ordersData.findIndex(o => o.id === id);
-                if (index !== -1) {
-                    ordersData[index] = { id: id, ...orderData };
-                    console.log("Ordine aggiornato localmente:", id);
-                }
-            } else {
-                // Nuovo Ordine: Assegna un ID univoco
-                orderData.id = crypto.randomUUID();
-                ordersData.push(orderData);
-                console.log("Nuovo ordine aggiunto localmente.");
-            }
-
-            saveOrders();
-            applyFilters(); // Aggiorna la vista
-        }
-
-        /**
-         * Calcola il totale man mano che l'utente digita Quantità e Prezzo.
-         */
-        function calculateTotal() {
-            const quantita = parseInt(document.getElementById('quantita').value) || 0;
-            const prezzoUnitario = parseFloat(document.getElementById('prezzo-unitario').value) || 0;
-            const totale = (quantita * prezzoUnitario).toFixed(2);
-            document.getElementById('calculated-total').textContent = `€ ${totale}`;
-        }
-        document.getElementById('quantita').addEventListener('input', calculateTotal);
-        document.getElementById('prezzo-unitario').addEventListener('input', calculateTotal);
-
-        /**
-         * Apre il modale per un nuovo ordine.
-         */
-        window.openModal = function() {
-            document.getElementById('order-form').reset();
-            document.getElementById('order-id').value = '';
-            document.getElementById('modal-title').textContent = 'Nuovo Ordine';
-            document.getElementById('calculated-total').textContent = '€ 0.00';
-            document.getElementById('order-modal').classList.remove('hidden');
-            document.getElementById('quantita').value = 1; // Valore predefinito
-            document.getElementById('ordine-concluso').value = 'No'; // Valore predefinito
-            calculateTotal();
-        }
-
-        /**
-         * Chiude il modale.
-         */
-        window.closeModal = function() {
-            document.getElementById('order-modal').classList.add('hidden');
-        }
-
-        /**
-         * Prepara il form per la modifica di un ordine esistente.
-         * @param {string} id - L'ID dell'ordine da modificare.
-         */
-        window.editOrder = function(id) {
-            const order = ordersData.find(o => o.id === id);
-            if (!order) {
-                console.error("Ordine non trovato per l'ID:", id);
+        // Esporta i dati attuali in un file JSON
+        const exportData = () => {
+            if (orders.length === 0) {
+                showMessage('Nessun dato da esportare.', 'yellow');
                 return;
             }
-
-            document.getElementById('order-id').value = order.id;
-            document.getElementById('modal-title').textContent = 'Modifica Ordine';
-            
-            // Popola i campi del form
-            document.getElementById('type-a').value = order.typeA || '';
-            document.getElementById('type-b').value = order.typeB || '';
-            document.getElementById('nome').value = order.nome || '';
-            document.getElementById('pezzo').value = order.pezzo || '';
-            document.getElementById('quantita').value = order.quantita || 1; 
-            document.getElementById('prezzo-unitario').value = order.prezzoUnitario || '';
-            document.getElementById('data-release').value = order.dataRelease || '';
-            document.getElementById('data-consegna').value = order.dataConsegna || '';
-            document.getElementById('note').value = order.note || '';
-            document.getElementById('ordine-concluso').value = order.ordineConcluso || 'No';
-
-            calculateTotal(); // Ricalcola il totale visualizzato
-
-            document.getElementById('order-modal').classList.remove('hidden');
-        }
-
-        /**
-         * Elimina un ordine (chiamato solo dopo la conferma in-card).
-         * @param {string} id - L'ID dell'ordine da eliminare.
-         */
-        function deleteOrder(id) {
             try {
-                const initialLength = ordersData.length;
-                // Filtra l'array, rimuovendo l'ordine con l'ID specificato
-                ordersData = ordersData.filter(order => order.id !== id);
-                
-                if (ordersData.length < initialLength) {
-                    saveOrders();
-                    applyFilters();
-                    console.log("Ordine eliminato localmente:", id);
-                } else {
-                    console.warn("Ordine non trovato per l'eliminazione.");
-                }
-            } catch (error) {
-                console.error("Errore durante l'eliminazione dell'ordine:", error);
+                const dataStr = JSON.stringify(orders, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+                const exportFileDefaultName = 'ordini_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+                showMessage('Dati esportati con successo come ' + exportFileDefaultName, 'green');
+            } catch (e) {
+                console.error("Errore in esportazione:", e);
+                showMessage('Errore durante l\'esportazione dei dati.', 'red');
             }
-        }
+        };
 
-        /**
-         * Esporta tutti gli ordini correnti come file JSON.
-         */
-        window.exportData = function() {
-            if (ordersData.length === 0) {
-                 console.warn("Nessun dato da esportare.");
-                 return;
-            }
-
-            const dataToExport = ordersData.map(order => {
-                // Rimuove l'ID, che è specifico del localStorage (non è un campo da backup)
-                const { id, ...rest } = order;
-                return rest;
-            });
-
-            const jsonString = JSON.stringify(dataToExport, null, 2);
-            const blob = new Blob([jsonString], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ordini_export_${new Date().toISOString().slice(0, 10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            console.log("Dati esportati con successo.");
-        }
-
-        /**
-         * Importa gli ordini da un file JSON e li salva in localStorage.
-         * @param {Event} event - L'evento di cambio file.
-         */
-        window.importData = function(event) {
+        // Importa dati da un file JSON
+        const importData = (event) => {
             const file = event.target.files[0];
             if (!file) return;
 
             const reader = new FileReader();
-            reader.onload = async (e) => {
+            reader.onload = (e) => {
                 try {
                     const importedOrders = JSON.parse(e.target.result);
+
                     if (!Array.isArray(importedOrders)) {
-                        console.error("Il file JSON non è un array di ordini valido.");
-                        return;
-                    }
-                    
-                    let importedCount = 0;
-                    for (const order of importedOrders) {
-                        // Assicura che i campi numerici siano numeri e assegna un nuovo ID locale
-                        order.quantita = parseInt(order.quantita) || 0;
-                        order.prezzoUnitario = parseFloat(order.prezzoUnitario) || 0;
-                        order.totale = (order.quantita * order.prezzoUnitario).toFixed(2);
-                        order.timestamp = order.timestamp || new Date().toISOString();
-                        order.id = crypto.randomUUID(); // Assegna un ID locale univoco
-
-                        ordersData.push(order);
-                        importedCount++;
+                        throw new Error('Il file JSON non contiene un array valido di ordini.');
                     }
 
-                    // Pulisce l'input file per poter reimportare lo stesso file
-                    event.target.value = ''; 
-                    
+                    // Semplice controllo di integrità
+                    const isValid = importedOrders.every(item => typeof item.id === 'number' && typeof item.totale === 'string' || item.totale === null);
+                    if (!isValid) {
+                        throw new Error('Il file sembra non essere un backup valido (struttura dati errata).');
+                    }
+
+                    // Sovrascrive i dati esistenti
+                    orders = importedOrders;
                     saveOrders();
-                    applyFilters();
-                    console.log(`Importazione completata. ${importedCount} ordini importati.`);
+                    showMessage(`Dati importati con successo! Sono stati caricati ${orders.length} elementi.`, 'green');
 
                 } catch (error) {
-                    console.error("Errore durante l'importazione dei dati:", error);
+                    console.error("Errore durante l'importazione:", error);
+                    showMessage(`Errore nell'importazione del file: ${error.message}`, 'red');
                 }
             };
             reader.readAsText(file);
-        }
+            // Resetta l'input file per consentire l'importazione dello stesso file più volte
+            event.target.value = '';
+        };
 
-        /**
-         * Funzione di inizializzazione locale.
-         */
-        function initLocalApp() {
-            // 1. Carica i dati da localStorage
+        // ---------------------------------------------
+        // 6. FUNZIONE MESSAGGIO E AVVIO
+        // ---------------------------------------------
+
+        // Funzione per mostrare messaggi temporanei
+        const showMessage = (text, type = 'green') => {
+            const area = document.getElementById('messageArea');
+            let color = '';
+
+            switch (type) {
+                case 'green':
+                    color = 'bg-green-500/20 text-green-200';
+                    break;
+                case 'red':
+                    color = 'bg-red-500/20 text-red-200';
+                    break;
+                case 'yellow':
+                    color = 'bg-yellow-500/20 text-yellow-200';
+                    break;
+                default:
+                    color = 'bg-green-500/20 text-green-200';
+            }
+
+            area.className = `p-2 ${color} rounded-lg text-sm mb-4 transition-all duration-300`;
+            area.textContent = text;
+            area.classList.remove('hidden');
+
+            setTimeout(() => {
+                area.classList.add('hidden');
+            }, 5000);
+        };
+
+        // Avvio dell'applicazione
+        window.onload = () => {
             loadOrders();
+            // Inizializza i totali
+            updateGlobalTotals(orders);
+        };
 
-            // 2. Applica i filtri (inizialmente predefiniti: solo Aperti) e renderizza
-            document.getElementById('filter-concluso').value = "No"; 
-            applyFilters(); 
-        }
-
-        // Inizializza l'applicazione al caricamento della finestra
-        window.onload = initLocalApp;
     </script>
+
 </body>
 </html>
