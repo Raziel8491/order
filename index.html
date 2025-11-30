@@ -2,7 +2,8 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- Viewport Aggiornato: Rimosso user-scalable=no per migliore compatibilità con tastiera iOS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Gestione Ordini (PWA)</title>
     
     <!-- TAGS AGGIUNTI PER LA MODALITÀ APP / PWA su iOS -->
@@ -12,7 +13,6 @@
     
     <!-- ICONA AGGIORNATA CON EMOJI "CARRELLO DELLA SPESA" 🛒 -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>">
-    <!-- Fine TAGS AGGIUNTI -->
     
     <!-- Carica Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,7 +37,9 @@
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-dark);
             color: var(--text-light);
-            padding-bottom: 80px; /* Spazio per la barra di navigazione fissa */
+            /* Aumentato il padding per la barra fissa e per evitare che il contenuto vada sotto l'area "sicura" (safe area) di iOS */
+            padding-bottom: 80px; 
+            padding-top: 1rem;
         }
         h1, h2, h3 {
             color: var(--text-light);
@@ -47,11 +49,13 @@
         .order-card {
             background-color: var(--bg-card);
             border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); /* Ombra più scura per il dark mode */
+            padding: 1.25rem; /* Aumentato il padding interno */
+            margin-bottom: 1rem; /* Aumentato il margine inferiore */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); 
             transition: transform 0.2s ease-in-out, box-shadow 0.2s;
             border: 1px solid var(--border-dark);
+            position: relative;
+            cursor: pointer;
         }
         .order-card:hover {
             transform: translateY(-3px);
@@ -69,51 +73,30 @@
             line-height: 1;
             white-space: nowrap;
         }
-        /* Nuovi colori badge in dark mode */
-        .badge-ordine { background-color: #1E3A8A; color: #93C5FD; } /* Blu scuro */
-        .badge-preordine { background-color: #854D0E; color: #FDBA74; } /* Arancio scuro */
-        .badge-b { background-color: #4B5563; color: var(--text-light); } /* Grigio card */
-        .badge-w { background-color: #6B7280; color: var(--text-light); } /* Grigio card più chiaro */
-        .badge-concluso { background-color: #065F46; color: var(--success-green); } /* Verde scuro */
-        .badge-aperto { background-color: #991B1B; color: var(--danger-red); } /* Rosso scuro */
+        /* Colori badge in dark mode */
+        .badge-ordine { background-color: #1E3A8A; color: #93C5FD; } 
+        .badge-preordine { background-color: #854D0E; color: #FDBA74; } 
+        .badge-b { background-color: #4B5563; color: var(--text-light); } 
+        .badge-w { background-color: #6B7280; color: var(--text-light); } 
+        .badge-concluso { background-color: #065F46; color: var(--success-green); } 
+        .badge-aperto { background-color: #991B1B; color: var(--danger-red); } 
 
-        /* Pulsanti di input/form */
-        .btn-submit {
-            background-color: var(--primary-blue);
-            color: #1F2937;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 700;
-            transition: background-color 0.2s ease-in-out;
-        }
-        .btn-submit:hover {
-            background-color: #3B82F6;
-        }
-        .btn-cancel {
-            background-color: var(--bg-card);
-            color: var(--text-light);
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem;
-            font-weight: 600;
-            border: 1px solid var(--border-dark);
-            transition: background-color 0.2s ease-in-out;
-        }
-        .btn-cancel:hover {
-            background-color: #4B5563;
-        }
-
-        /* Input e Select per Dark Mode */
+        /* Input e Select per Dark Mode + Aumento altezza per touch target */
         input[type="text"], input[type="number"], input[type="date"], textarea, select {
-            background-color: #4B5563; /* Sfondo campo */
+            background-color: #4B5563; 
             color: var(--text-light);
             border-color: var(--border-dark);
-            border-radius: 0.5rem;
+            border-radius: 0.75rem; /* Bordi più arrotondati */
             padding: 0.6rem 0.8rem;
+            height: 44px; /* Altezza minima per un buon touch target su iOS */
             transition: border-color 0.2s;
+        }
+        textarea {
+            height: 80px; /* Altezza textarea migliorata */
         }
         input[type="text"]:focus, input[type="number"]:focus, input[type="date"]:focus, textarea:focus, select:focus {
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.4);
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.4); /* Ombra più evidente al focus */
             outline: none;
         }
         
@@ -122,12 +105,30 @@
             background-color: var(--bg-dark);
             border-radius: 1.5rem;
             border: 1px solid var(--border-dark);
+            max-height: 90vh; /* Permette lo scroll se il contenuto è troppo alto */
+            overflow-y: auto; /* Abilita lo scroll */
         }
         .modal-form label {
             color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+        
+        /* Contenitore Principale - Centrato e con Margine su grandi schermi */
+        .container-main {
+            max-width: 100%;
+            padding: 0 1rem;
+            margin: 0 auto;
+        }
+        @media (min-width: 768px) {
+            .container-main {
+                max-width: 900px; /* Limite per desktop/tablet */
+                padding: 0 2rem;
+            }
         }
 
-        /* Sezione Azioni Fisse (Nuovo Look) */
+
+        /* Sezione Azioni Fisse */
         #fixed-actions {
             position: fixed;
             bottom: 0;
@@ -157,7 +158,6 @@
         /* Override colori testo */
         .text-green-700 { color: var(--success-green); }
         .text-gray-500 { color: var(--text-muted); }
-        .text-gray-600 { color: var(--text-muted); }
 
         /* Riepilogo e Filtri */
         .summary-box {
@@ -167,6 +167,18 @@
         }
         #total-value { color: var(--success-green); }
         #pending-count { color: var(--danger-red); }
+        
+        /* Stili per la conferma di eliminazione in-card */
+        .delete-confirm-bar {
+            background-color: rgba(248, 113, 113, 0.1); /* Rosso molto chiaro */
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid var(--danger-red);
+        }
 
     </style>
 </head>
@@ -192,7 +204,7 @@
                 </div>
             </div>
 
-            <!-- Filtri (usano i nuovi stili input) -->
+            <!-- Filtri (utilizzano i nuovi stili input con altezza aumentata) -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <select id="filter-type-a" class="w-full text-sm" onchange="applyFilters()">
                     <option value="">Tipo A (Tutti)</option>
@@ -224,8 +236,9 @@
 
     <!-- Modale/Form per Aggiungere/Modificare Ordine -->
     <div id="order-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center p-4 z-20">
-        <div class="w-full max-w-md rounded-xl shadow-2xl p-6 modal-content">
-            <h3 id="modal-title" class="text-2xl font-bold mb-4 modal-title">Nuovo Ordine</h3>
+        <!-- Contenuto modale: Aggiunto z-index più alto e scrollabilità -->
+        <div class="w-full max-w-lg rounded-xl shadow-2xl p-6 modal-content z-30"> 
+            <h3 id="modal-title" class="text-2xl font-bold mb-5 modal-title">Nuovo Ordine</h3>
             
             <form id="order-form" class="space-y-4 modal-form">
                 
@@ -235,7 +248,7 @@
                 <!-- Riga 1: Type A / Type B -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="type-a" class="block text-sm font-medium">Tipo A</label>
+                        <label for="type-a" class="text-sm font-medium">Tipo A</label>
                         <select id="type-a" class="w-full mt-1">
                             <option value="">Seleziona</option>
                             <option value="Ordine">Ordine</option>
@@ -243,7 +256,7 @@
                         </select>
                     </div>
                     <div>
-                        <label for="type-b" class="block text-sm font-medium">Tipo B</label>
+                        <label for="type-b" class="text-sm font-medium">Tipo B</label>
                         <select id="type-b" class="w-full mt-1">
                             <option value="">Seleziona</option>
                             <option value="B">B</option>
@@ -254,47 +267,47 @@
 
                 <!-- Riga 2: Nome / Pezzo -->
                 <div>
-                    <label for="nome" class="block text-sm font-medium">Nome Cliente</label>
+                    <label for="nome" class="text-sm font-medium">Nome Cliente</label>
                     <input type="text" id="nome" class="w-full mt-1" placeholder="Nome del cliente">
                 </div>
                 <div>
-                    <label for="pezzo" class="block text-sm font-medium">Nome Oggetto</label>
+                    <label for="pezzo" class="text-sm font-medium">Nome Oggetto</label>
                     <input type="text" id="pezzo" class="w-full mt-1" placeholder="Nome dell'oggetto">
                 </div>
                 
                 <!-- Riga 3: Quantità / Prezzo Unitario -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="quantita" class="block text-sm font-medium">Quantità</label>
-                        <input type="number" id="quantita" class="w-full mt-1" min="1" value="1">
+                        <label for="quantita" class="text-sm font-medium">Quantità</label>
+                        <input type="number" id="quantita" class="w-full mt-1" min="1" value="1" inputmode="numeric">
                     </div>
                     <div>
-                        <label for="prezzo-unitario" class="block text-sm font-medium">Prezzo Unitario (€)</label>
-                        <input type="number" id="prezzo-unitario" class="w-full mt-1" step="0.01" placeholder="0.00">
+                        <label for="prezzo-unitario" class="text-sm font-medium">Prezzo Unitario (€)</label>
+                        <input type="number" id="prezzo-unitario" class="w-full mt-1" step="0.01" placeholder="0.00" inputmode="decimal">
                     </div>
                 </div>
 
                 <!-- Totale Calcolato (Solo Visualizzazione) -->
-                <div>
-                    <p class="text-sm font-medium">Totale Calcolato</p>
-                    <p id="calculated-total" class="text-lg font-bold text-success-green">€ 0.00</p>
+                <div class="pt-2">
+                    <p class="text-sm font-medium text-gray-500">Totale Calcolato</p>
+                    <p id="calculated-total" class="text-xl font-bold text-success-green">€ 0.00</p>
                 </div>
                 
                 <!-- Riga 4: Date -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="data-release" class="block text-sm font-medium">Data Release</label>
+                        <label for="data-release" class="text-sm font-medium">Data Release</label>
                         <input type="date" id="data-release" class="w-full mt-1">
                     </div>
                     <div>
-                        <label for="data-consegna" class="block text-sm font-medium">Data Consegna (Indicata)</label>
+                        <label for="data-consegna" class="text-sm font-medium">Data Consegna (Indicata)</label>
                         <input type="date" id="data-consegna" class="w-full mt-1">
                     </div>
                 </div>
 
                 <!-- Riga 5: Ordine Concluso -->
                 <div>
-                    <label for="ordine-concluso" class="block text-sm font-medium">Ordine Concluso</label>
+                    <label for="ordine-concluso" class="text-sm font-medium">Ordine Concluso</label>
                     <select id="ordine-concluso" class="w-full mt-1">
                         <option value="No">No (In Corso)</option>
                         <option value="Si">Sì (Concluso)</option>
@@ -303,12 +316,12 @@
 
                 <!-- Riga 6: Note -->
                 <div>
-                    <label for="note" class="block text-sm font-medium">Note (max 50 caratteri)</label>
-                    <textarea id="note" class="w-full mt-1 h-16 resize-none" maxlength="50" placeholder="Note veloci..."></textarea>
+                    <label for="note" class="text-sm font-medium">Note (max 50 caratteri)</label>
+                    <textarea id="note" class="w-full mt-1 resize-none" maxlength="50" placeholder="Note veloci..."></textarea>
                 </div>
                 
                 <!-- Pulsanti Azione Modale -->
-                <div class="flex justify-end space-x-3 pt-4">
+                <div class="flex justify-end space-x-3 pt-6">
                     <button type="button" onclick="closeModal()" class="btn-cancel">Annulla</button>
                     <button type="submit" class="btn-submit">Salva Ordine</button>
                 </div>
@@ -316,7 +329,7 @@
         </div>
     </div>
     
-    <!-- Barra di Navigazione Fissa (Mobile Optimized - Ridisegnata) -->
+    <!-- Barra di Navigazione Fissa (Mobile Optimized) -->
     <div id="fixed-actions" class="flex justify-around items-center">
         <!-- Nuovo -->
         <button onclick="openModal()" class="action-button text-primary-blue hover:text-white">
@@ -401,7 +414,7 @@
             });
 
             renderOrders(filteredOrders);
-            updateTotals(filteredOrders);
+            updateTotals(ordersData); // Aggiorna i totali globali sempre su ordersData
         }
 
         /**
@@ -420,16 +433,13 @@
 
         /**
          * Aggiorna i totali complessivi nell'interfaccia utente.
-         * @param {Array<Object>} orders - L'array di ordini filtrati da cui calcolare i totali.
+         * @param {Array<Object>} orders - L'array di ordini completo da cui calcolare i totali.
          */
         function updateTotals(orders) {
             let totalValue = 0;
             let pendingCount = 0;
 
-            // Per il conteggio totale, consideriamo TUTTI gli ordini, non solo i filtrati, se il filtro è su "Tutti"
-            const allOrders = ordersData; 
-
-            allOrders.forEach(order => {
+            orders.forEach(order => {
                 const total = parseFloat(order.totale) || 0;
                 totalValue += total;
                 if (order.ordineConcluso === 'No') {
@@ -441,7 +451,8 @@
             document.getElementById('total-value').textContent = `€ ${totalValue.toFixed(2)}`;
             document.getElementById('pending-count').textContent = pendingCount;
             // Aggiorna il conteggio degli ordini attualmente visualizzati (filtrati)
-            document.getElementById('orders-count').textContent = orders.length;
+            document.getElementById('orders-count').textContent = 
+                document.getElementById('orders-list').children.length;
         }
 
         /**
@@ -468,45 +479,97 @@
                 const isConcluded = order.ordineConcluso === 'Si';
                 
                 const orderHtml = `
-                    <div class="order-card grid grid-cols-12 gap-2" onclick="editOrder('${order.id}')">
-                        <!-- Colonna Sinistra: Pezzo e Info Principali -->
-                        <div class="col-span-12 sm:col-span-9">
-                            <h3 class="text-lg font-bold truncate">${order.pezzo || 'Nessun Oggetto'}</h3>
-                            <p class="text-sm text-gray-600 mb-1">${order.nome || 'Cliente Anonimo'}</p>
-                            
-                            <!-- Badge -->
-                            <div class="flex flex-wrap gap-2 mt-2">
-                                <span class="badge ${order.typeA === 'Ordine' ? 'badge-ordine' : 'badge-preordine'}">${order.typeA || 'N/A'}</span>
-                                <span class="badge ${order.typeB === 'B' ? 'badge-b' : 'badge-w'}">${order.typeB || 'N/A'}</span>
-                                <span class="badge ${isConcluded ? 'badge-concluso' : 'badge-aperto'}">
-                                    ${isConcluded ? 'Concluso' : 'Aperto'}
-                                </span>
+                    <div id="card-${order.id}" class="order-card">
+                        <div onclick="editOrder('${order.id}')" class="grid grid-cols-12 gap-2 pb-2">
+                            <!-- Colonna Sinistra: Pezzo e Info Principali -->
+                            <div class="col-span-12 sm:col-span-9">
+                                <h3 class="text-xl font-bold truncate">${order.pezzo || 'Nessun Oggetto'}</h3>
+                                <p class="text-sm text-gray-500 mb-2">Cliente: ${order.nome || 'Anonimo'}</p>
+                                
+                                <!-- Badge -->
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <span class="badge ${order.typeA === 'Ordine' ? 'badge-ordine' : 'badge-preordine'}">${order.typeA || 'N/A'}</span>
+                                    <span class="badge ${order.typeB === 'B' ? 'badge-b' : 'badge-w'}">${order.typeB || 'N/A'}</span>
+                                    <span class="badge ${isConcluded ? 'badge-concluso' : 'badge-aperto'}">
+                                        ${isConcluded ? 'Concluso' : 'Aperto'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Colonna Destra: Totale e Quantità -->
+                            <div class="col-span-12 sm:col-span-3 text-right flex flex-col justify-end items-end">
+                                <p class="text-2xl font-extrabold text-green-700">${total.toFixed(2)} €</p>
+                                <p class="text-sm text-gray-500 mt-1">${order.quantita || 0} pz</p>
                             </div>
                         </div>
 
-                        <!-- Colonna Destra: Totale e Quantità -->
-                        <div class="col-span-12 sm:col-span-3 text-right flex flex-col justify-between">
-                            <p class="text-2xl font-extrabold text-green-700">${total.toFixed(2)} €</p>
-                            <p class="text-sm text-gray-500 mt-1">${order.quantita || 0} pz</p>
-                        </div>
-
-                        <!-- Riga Dettagli (Col Span 12) -->
-                        <div class="col-span-12 border-t border-border-dark pt-2 mt-2 text-sm text-gray-500">
-                            ${order.note ? `<p class="italic">Note: ${order.note}</p>` : ''}
-                            <p class="mt-1">Release: ${order.dataRelease || 'N/A'} | Consegna: ${order.dataConsegna || 'N/A'}</p>
+                        <!-- Riga Dettagli -->
+                        <div class="border-t border-border-dark pt-3 mt-1 text-sm text-gray-500">
+                            ${order.note ? `<p class="italic mb-1">Note: ${order.note}</p>` : ''}
+                            <p>Release: ${order.dataRelease || 'N/A'} | Consegna Prevista: ${order.dataConsegna || 'N/A'}</p>
                         </div>
                         
-                        <!-- Pulsante Elimina -->
-                        <div class="col-span-12 flex justify-end">
-                            <button onclick="event.stopPropagation(); deleteOrder('${order.id}')" class="text-danger-red hover:text-red-400 text-sm p-1 transition">
-                                Elimina
+                        <!-- Barra di Eliminazione (Nascosta inizialmente) -->
+                        <div id="delete-bar-${order.id}" class="delete-confirm-bar hidden mt-3">
+                            <span class="text-sm text-danger-red font-semibold">Confermi l'eliminazione?</span>
+                            <div class="flex space-x-2">
+                                <button onclick="confirmDelete('${order.id}', true)" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-xs transition">
+                                    SÌ, Elimina
+                                </button>
+                                <button onclick="confirmDelete('${order.id}', false)" class="bg-gray-500 hover:bg-gray-600 text-white py-1 px-3 rounded-md text-xs transition">
+                                    Annulla
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Pulsante Elimina (Visibile di default) -->
+                        <div id="delete-button-container-${order.id}" class="flex justify-end pt-2">
+                            <button onclick="showDeleteConfirm('${order.id}')" class="text-danger-red hover:text-red-400 text-sm p-1 transition">
+                                Elimina Ordine
                             </button>
                         </div>
                     </div>
                 `;
                 listContainer.insertAdjacentHTML('beforeend', orderHtml);
             });
+             updateTotals(ordersData); // Aggiorna il conteggio solo dopo il rendering
         }
+
+        /**
+         * Mostra la barra di conferma eliminazione.
+         * @param {string} id - L'ID dell'ordine.
+         */
+        window.showDeleteConfirm = function(id) {
+            const bar = document.getElementById(`delete-bar-${id}`);
+            const button = document.getElementById(`delete-button-container-${id}`);
+
+            // Nasconde tutti gli altri messaggi di conferma
+            document.querySelectorAll('.delete-confirm-bar').forEach(b => b.classList.add('hidden'));
+            document.querySelectorAll('[id^="delete-button-container-"]').forEach(b => b.classList.remove('hidden'));
+            
+            // Mostra la barra specifica
+            bar.classList.remove('hidden');
+            button.classList.add('hidden');
+        }
+        
+        /**
+         * Gestisce la conferma/annullamento dell'eliminazione.
+         * @param {string} id - L'ID dell'ordine.
+         * @param {boolean} confirm - Vero se l'utente ha confermato, Falso altrimenti.
+         */
+        window.confirmDelete = function(id, confirm) {
+            const bar = document.getElementById(`delete-bar-${id}`);
+            const button = document.getElementById(`delete-button-container-${id}`);
+
+            if (confirm) {
+                deleteOrder(id);
+            } else {
+                // Nasconde la barra e ripristina il pulsante
+                bar.classList.add('hidden');
+                button.classList.remove('hidden');
+            }
+        }
+
 
         /**
          * Gestisce l'invio del form (Aggiungi o Modifica).
@@ -634,29 +697,25 @@
         }
 
         /**
-         * Elimina un ordine.
+         * Elimina un ordine (chiamato solo dopo la conferma in-card).
          * @param {string} id - L'ID dell'ordine da eliminare.
          */
-        window.deleteOrder = function(id) {
-             // Utilizza una finestra di dialogo modale personalizzata in un ambiente reale, 
-             // ma per semplicità qui usiamo la funzione di conferma nativa come esempio.
-             if (window.confirm("Sei sicuro di voler eliminare questo ordine? L'azione è irreversibile.")) {
-                try {
-                    const initialLength = ordersData.length;
-                    // Filtra l'array, rimuovendo l'ordine con l'ID specificato
-                    ordersData = ordersData.filter(order => order.id !== id);
-                    
-                    if (ordersData.length < initialLength) {
-                        saveOrders();
-                        applyFilters();
-                        console.log("Ordine eliminato localmente:", id);
-                    } else {
-                        console.warn("Ordine non trovato per l'eliminazione.");
-                    }
-                } catch (error) {
-                    console.error("Errore durante l'eliminazione dell'ordine:", error);
+        function deleteOrder(id) {
+            try {
+                const initialLength = ordersData.length;
+                // Filtra l'array, rimuovendo l'ordine con l'ID specificato
+                ordersData = ordersData.filter(order => order.id !== id);
+                
+                if (ordersData.length < initialLength) {
+                    saveOrders();
+                    applyFilters();
+                    console.log("Ordine eliminato localmente:", id);
+                } else {
+                    console.warn("Ordine non trovato per l'eliminazione.");
                 }
-             }
+            } catch (error) {
+                console.error("Errore durante l'eliminazione dell'ordine:", error);
+            }
         }
 
         /**
